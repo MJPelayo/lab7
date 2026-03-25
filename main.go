@@ -7,41 +7,43 @@ import (
 	"log"          // for logging errors
 	"net/http"     // for creating a web server
 
-	_ "github.com/lib/pq" // PostgreSQL driver (underscore = auto-load)
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-// Global database variable (shared across files)
+// 🌍 Global database variable (accessible in all files)
 var DB *sql.DB
 
 func main() {
 
-	// 🔗 Connection string (DSN)
+	// 🔗 Database connection string (DSN)
 	dsn := "postgres://go_user:go123@localhost:5432/myapp_db?sslmode=disable"
 
 	var err error
 
-	// 🛠️ Open connection to database
+	// 🛠️ Open database connection
 	DB, err = sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal("Error opening database:", err)
+		log.Fatal("❌ Error opening database:", err)
 	}
 
-	// 🧪 Test if DB is reachable
+	// 🧪 Check if database is reachable
 	err = DB.Ping()
 	if err != nil {
-		log.Fatal("Database not reachable:", err)
+		log.Fatal("❌ Database not reachable:", err)
 	}
 
 	fmt.Println("✅ Connected to PostgreSQL!")
 
-	// 🌐 Start web server
+	// 🌐 ROUTES (API endpoints)
 	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/students", getStudents) // 👈 NEW ROUTE
 
-	fmt.Println("🚀 Server running on port 8080...")
+	// 🚀 Start server
+	fmt.Println("🚀 Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// 🏠 Basic route handler
+// 🏠 Home route
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to Lab 7 API 🚀")
 }
