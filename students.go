@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json" // convert Go data → JSON
+	"encoding/json"
 	"log"
 	"net/http"
 )
 
-// 🧱 Student struct (represents table structure)
+// 🧱 Student model
 type Student struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
@@ -14,10 +14,9 @@ type Student struct {
 	Year      int    `json:"year"`
 }
 
-// 📥 Handler: Get all students
+// 📥 GET /students
 func getStudents(w http.ResponseWriter, r *http.Request) {
 
-	// SQL query
 	rows, err := DB.Query("SELECT id, name, programme, year FROM students")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -25,10 +24,8 @@ func getStudents(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// slice to store results
 	var students []Student
 
-	// loop through rows
 	for rows.Next() {
 		var s Student
 
@@ -41,7 +38,6 @@ func getStudents(w http.ResponseWriter, r *http.Request) {
 		students = append(students, s)
 	}
 
-	// return JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(students)
 }
