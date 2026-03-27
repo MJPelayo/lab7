@@ -1,31 +1,40 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
-// 🌍 Global DB variable
-var DB *sql.DB
+// Git Commit: refactor DB connection to use application struct
 
-// 🔗 Initialize DB connection
-func InitDB() {
+func openDB() *sql.DB {
 
 	dsn := "postgres://go_user:go123@localhost:5432/myapp_db?sslmode=disable"
 
-	var err error
-
-	DB, err = sql.Open("postgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal("❌ Error opening database:", err)
+		log.Fatal("❌ DB open error:", err)
 	}
 
-	err = DB.Ping()
+	// connection pool settings
+	db.SetMaxOpenConns(25)                   // max open connections
+	db.SetMaxIdleConns(10)                   // idle connections
+	db.SetConnMaxIdleTime(15 * time.Minute)  // idle timeout
+
+	// test connection with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
 	if err != nil {
-		log.Fatal("❌ Database not reachable:", err)
+		log.Fatal("❌ DB not reachable:", err)
 	}
 
-	log.Println("✅ Connected to PostgreSQL!")
+	log.Println("✅ Connected to PostgreSQL")
+
+	return db
 }

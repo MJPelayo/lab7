@@ -1,20 +1,31 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
 
+// Git Commit: refactor application structure
+
 func main() {
 
-	// 🔗 Initialize database
-	InitDB()
+	// initialize database
+	db := openDB()
 
-	// 🧭 Register routes
-	RegisterRoutes()
+	// create app struct (dependency injection)
+	app := &application{
+		db: db,
+	}
 
-	// 🚀 Start server
-	fmt.Println("🚀 Server running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// create router
+	mux := http.NewServeMux()
+
+	// register routes
+	app.routes(mux)
+
+	log.Println("🚀 Server running on :4000")
+
+	// start server
+	err := http.ListenAndServe(":4000", mux)
+	log.Fatal(err)
 }

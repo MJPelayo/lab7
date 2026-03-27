@@ -1,17 +1,33 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
 	"net/http"
 )
 
-func RegisterRoutes() {
+// Git Commit: refactor routes using application struct
 
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/students", getStudents)
+// application struct (holds dependencies)
+type application struct {
+	db *sql.DB
 }
 
-// 🏠 Home route
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to Lab 7 API 🚀")
+// register all routes
+func (app *application) routes(mux *http.ServeMux) {
+
+	// home route
+	mux.HandleFunc("/", app.home)
+
+	// student routes
+	mux.HandleFunc("/students", app.getStudents)
+	mux.HandleFunc("/students", app.createStudent)
+
+	// later we will add:
+	// PUT /students/{id}
+	// DELETE /students/{id}
+}
+
+// home handler
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Welcome to Lab 7 API 🚀"))
 }
