@@ -21,9 +21,9 @@ func openDB() *sql.DB {
 	}
 
 	// connection pool settings
-	db.SetMaxOpenConns(25)                   // max open connections
-	db.SetMaxIdleConns(10)                   // idle connections
-	db.SetConnMaxIdleTime(15 * time.Minute)  // idle timeout
+	db.SetMaxOpenConns(25)                  // max open connections
+	db.SetMaxIdleConns(10)                  // idle connections
+	db.SetConnMaxIdleTime(15 * time.Minute) // idle timeout
 
 	// test connection with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

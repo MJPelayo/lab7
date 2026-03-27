@@ -15,7 +15,7 @@ type Student struct {
 }
 
 // 📥 GET /students
-func (app *application) getStudents(w http.ResponseWriter, r *http.Request){
+func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := app.db.Query("SELECT id, name, programme, year FROM students")
 	if err != nil {
@@ -43,7 +43,7 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request){
 }
 
 // 📤 POST /students
-func (app *application) createStudent(w http.ResponseWriter, r *http.Request){
+func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
