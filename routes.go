@@ -5,29 +5,47 @@ import (
 	"net/http"
 )
 
-// Git Commit: refactor routes using application struct
-
-// application struct (holds dependencies)
+// application struct
 type application struct {
 	db *sql.DB
 }
 
-// register all routes
 func (app *application) routes(mux *http.ServeMux) {
 
-	// home route
 	mux.HandleFunc("/", app.home)
 
-	// student routes
-	mux.HandleFunc("/students", app.getStudents)
-	mux.HandleFunc("/students", app.createStudent)
+	// students
+	mux.HandleFunc("/students", app.studentsHandler)
 
-	// later we will add:
-	// PUT /students/{id}
-	// DELETE /students/{id}
+	// courses
+	mux.HandleFunc("/courses", app.coursesHandler)
 }
 
-// home handler
+// 🎯 students router
+func (app *application) studentsHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		app.getStudents(w, r)
+	case http.MethodPost:
+		app.createStudent(w, r)
+	default:
+		http.Error(w, "Method not allowed", 405)
+	}
+}
+
+// 🎯 courses router
+func (app *application) coursesHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		app.getCourses(w, r)
+	case http.MethodPost:
+		app.createCourse(w, r)
+	default:
+		http.Error(w, "Method not allowed", 405)
+	}
+}
+
+// home
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Welcome to Lab 7 API 🚀"))
 }
