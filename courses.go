@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-// 🧱 Course model
 type Course struct {
 	ID         int    `json:"id"`
 	Code       string `json:"code"`
@@ -17,84 +16,36 @@ type Course struct {
 	Enrolled   int    `json:"enrolled"`
 }
 
-// GET /courses
 func (app *application) getCourses(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := app.db.Query("SELECT id, code, title, department, instructor, credits, capacity, enrolled FROM courses")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
+	rows, _ := app.db.Query("SELECT id, code, title, department, instructor, credits, capacity, enrolled FROM courses")
 	defer rows.Close()
 
 	var courses []Course
 
 	for rows.Next() {
 		var c Course
-
-		err := rows.Scan(
-			&c.ID,
-			&c.Code,
-			&c.Title,
-			&c.Department,
-			&c.Instructor,
-			&c.Credits,
-			&c.Capacity,
-			&c.Enrolled,
-		)
-		if err != nil {
-			continue
-		}
-
+		rows.Scan(&c.ID, &c.Code, &c.Title, &c.Department, &c.Instructor, &c.Credits, &c.Capacity, &c.Enrolled)
 		courses = append(courses, c)
 	}
 
 	json.NewEncoder(w).Encode(courses)
 }
 
-// POST /courses
 func (app *application) createCourse(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", 405)
-		return
-	}
-
 	var c Course
+	json.NewDecoder(r.Body).Decode(&c)
 
-	err := json.NewDecoder(r.Body).Decode(&c)
-	if err != nil {
-		http.Error(w, "Invalid JSON", 400)
-		return
-	}
-
-	// validation
 	if err := validateCourse(c); err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
 
-	query := `
-	INSERT INTO courses (code, title, department, instructor, credits, capacity, enrolled)
-	VALUES ($1,$2,$3,$4,$5,$6,$7)
-	RETURNING id
-	`
+	query := `INSERT INTO courses (code, title, department, instructor, credits, capacity, enrolled)
+			  VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`
 
-	err = app.db.QueryRow(
-		query,
-		c.Code,
-		c.Title,
-		c.Department,
-		c.Instructor,
-		c.Credits,
-		c.Capacity,
-		c.Enrolled,
-	).Scan(&c.ID)
-
-	if err != nil {
-		http.Error(w, "Insert failed", 500)
-		return
-	}
+	app.db.QueryRow(query, c.Code, c.Title, c.Department, c.Instructor, c.Credits, c.Capacity, c.Enrolled).Scan(&c.ID)
 
 	json.NewEncoder(w).Encode(c)
 }

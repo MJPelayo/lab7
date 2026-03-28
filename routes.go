@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-// application struct
 type application struct {
 	db *sql.DB
 }
@@ -14,17 +13,11 @@ func (app *application) routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/", app.home)
 
-	// students
 	mux.HandleFunc("/students", app.studentsHandler)
-
-	// courses
 	mux.HandleFunc("/courses", app.coursesHandler)
-
-	// enrollments
 	mux.HandleFunc("/enroll", app.enrollStudent)
 }
 
-// students router
 func (app *application) studentsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -40,7 +33,6 @@ func (app *application) studentsHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// courses router
 func (app *application) coursesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -50,9 +42,8 @@ func (app *application) coursesHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", 405)
 	}
+}
 
-
-// home
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Welcome to Lab 7 API 🚀"))
 }

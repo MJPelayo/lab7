@@ -6,7 +6,6 @@ import (
 	"strconv"
 )
 
-// Student model
 type Student struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
@@ -14,14 +13,9 @@ type Student struct {
 	Year      int    `json:"year"`
 }
 
-// GET
 func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := app.db.Query("SELECT id, name, programme, year FROM students")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
+	rows, _ := app.db.Query("SELECT id, name, programme, year FROM students")
 	defer rows.Close()
 
 	var students []Student
@@ -35,11 +29,9 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(students)
 }
 
-// POST
 func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 
 	var s Student
-
 	json.NewDecoder(r.Body).Decode(&s)
 
 	if err := validateStudent(s); err != nil {
@@ -47,49 +39,30 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `INSERT INTO students (name, programme, year)
-	          VALUES ($1,$2,$3) RETURNING id`
-
+	query := `INSERT INTO students (name, programme, year) VALUES ($1,$2,$3) RETURNING id`
 	app.db.QueryRow(query, s.Name, s.Programme, s.Year).Scan(&s.ID)
 
 	json.NewEncoder(w).Encode(s)
 }
 
-// PUT
 func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 
-	idStr := r.URL.Query().Get("id")
-	id, _ := strconv.Atoi(idStr)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 
 	var s Student
 	json.NewDecoder(r.Body).Decode(&s)
 
-	query := `
-	UPDATE students
-	SET name=$1, programme=$2, year=$3
-	WHERE id=$4
-	`
-
-	_, err := app.db.Exec(query, s.Name, s.Programme, s.Year, id)
-	if err != nil {
-		http.Error(w, "Update failed", 500)
-		return
-	}
+	app.db.Exec("UPDATE students SET name=$1, programme=$2, year=$3 WHERE id=$4",
+		s.Name, s.Programme, s.Year, id)
 
 	w.Write([]byte("Updated"))
 }
 
-// DELETE
 func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
 
-	idStr := r.URL.Query().Get("id")
-	id, _ := strconv.Atoi(idStr)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 
-	_, err := app.db.Exec("DELETE FROM students WHERE id=$1", id)
-	if err != nil {
-		http.Error(w, "Delete failed", 500)
-		return
-	}
+	app.db.Exec("DELETE FROM students WHERE id=$1", id)
 
 	w.Write([]byte("Deleted"))
 }

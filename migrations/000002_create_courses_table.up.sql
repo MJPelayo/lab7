@@ -1,4 +1,4 @@
--- Create table
+-- 1. Create table
 
 CREATE TABLE courses (
     id BIGSERIAL PRIMARY KEY,
@@ -10,3 +10,12 @@ CREATE TABLE courses (
     capacity INT NOT NULL CHECK (capacity > 0),
     enrolled INT DEFAULT 0 CHECK (enrolled >= 0)
 );
+
+-- 2. Index (for faster searching)
+CREATE INDEX idx_courses_code ON courses (code);
+
+-- 3. Seed data (initial test data)
+INSERT INTO courses (code, title, department, instructor, credits, capacity) VALUES
+('CS101', 'Introduction to Computer Science', 'Computer Science', 'Dr. Smith', 3, 30),
+('IS201', 'Information Systems Analysis', 'Information Systems', 'Dr. Johnson', 4, 25),
+('CS202', 'Data Structures', 'Computer Science', 'Dr. Lee', 3, 30);     
