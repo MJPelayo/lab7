@@ -21,19 +21,23 @@ func (app *application) routes(mux *http.ServeMux) {
 	mux.HandleFunc("/courses", app.coursesHandler)
 }
 
-// 🎯 students router
+// students router
 func (app *application) studentsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		app.getStudents(w, r)
 	case http.MethodPost:
 		app.createStudent(w, r)
+	case http.MethodPut:
+		app.updateStudent(w, r)
+	case http.MethodDelete:
+		app.deleteStudent(w, r)
 	default:
 		http.Error(w, "Method not allowed", 405)
 	}
 }
 
-// 🎯 courses router
+// courses router
 func (app *application) coursesHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

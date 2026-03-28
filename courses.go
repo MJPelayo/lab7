@@ -17,7 +17,7 @@ type Course struct {
 	Enrolled   int    `json:"enrolled"`
 }
 
-// 📥 GET /courses
+// GET /courses
 func (app *application) getCourses(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := app.db.Query("SELECT id, code, title, department, instructor, credits, capacity, enrolled FROM courses")
@@ -52,7 +52,7 @@ func (app *application) getCourses(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(courses)
 }
 
-// 📤 POST /courses
+// POST /courses
 func (app *application) createCourse(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {

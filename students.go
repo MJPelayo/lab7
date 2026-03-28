@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"strconv"
 )
 
-// 🧱 Student model
+// Student model
 type Student struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
@@ -14,12 +14,12 @@ type Student struct {
 	Year      int    `json:"year"`
 }
 
-// 📥 GET /students
+// GET
 func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := app.db.Query("SELECT id, name, programme, year FROM students")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	defer rows.Close()
@@ -28,57 +28,68 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var s Student
-
-		err := rows.Scan(&s.ID, &s.Name, &s.Programme, &s.Year)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
+		rows.Scan(&s.ID, &s.Name, &s.Programme, &s.Year)
 		students = append(students, s)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(students)
 }
 
-// 📤 POST /students
+// POST
 func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	var s Student
 
-	// Decode JSON
-	err := json.NewDecoder(r.Body).Decode(&s)
-	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+	json.NewDecoder(r.Body).Decode(&s)
+
+	if err := validateStudent(s); err != nil {
+		http.Error(w, err.Error(), 400)
 		return
 	}
 
-	// Basic validation
-	if s.Name == "" || s.Programme == "" || s.Year == 0 {
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
-		return
-	}
+	query := `INSERT INTO students (name, programme, year)
+	          VALUES ($1,$2,$3) RETURNING id`
 
-	// Insert into DB
+	app.db.QueryRow(query, s.Name, s.Programme, s.Year).Scan(&s.ID)
+
+	json.NewEncoder(w).Encode(s)
+}
+
+// PUT
+func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
+
+	idStr := r.URL.Query().Get("id")
+	id, _ := strconv.Atoi(idStr)
+
+	var s Student
+	json.NewDecoder(r.Body).Decode(&s)
+
 	query := `
-		INSERT INTO students (name, programme, year)
-		VALUES ($1, $2, $3)
-		RETURNING id
+	UPDATE students
+	SET name=$1, programme=$2, year=$3
+	WHERE id=$4
 	`
 
-	err = app.db.QueryRow(query, s.Name, s.Programme, s.Year).Scan(&s.ID)
+	_, err := app.db.Exec(query, s.Name, s.Programme, s.Year, id)
 	if err != nil {
-		http.Error(w, "Failed to insert student", http.StatusInternalServerError)
+		http.Error(w, "Update failed", 500)
 		return
 	}
 
-	// Return created student
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(s)
+	w.Write([]byte("Updated"))
+}
+
+// DELETE
+func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
+
+	idStr := r.URL.Query().Get("id")
+	id, _ := strconv.Atoi(idStr)
+
+	_, err := app.db.Exec("DELETE FROM students WHERE id=$1", id)
+	if err != nil {
+		http.Error(w, "Delete failed", 500)
+		return
+	}
+
+	w.Write([]byte("Deleted"))
 }
