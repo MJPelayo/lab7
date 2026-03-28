@@ -15,7 +15,8 @@ func (app *application) routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/students", app.studentsHandler)
 	mux.HandleFunc("/courses", app.coursesHandler)
-	mux.HandleFunc("/enroll", app.enrollStudent)
+	mux.HandleFunc("/enroll", app.enrollStudent)	
+	
 }
 
 func (app *application) studentsHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +40,10 @@ func (app *application) coursesHandler(w http.ResponseWriter, r *http.Request) {
 		app.getCourses(w, r)
 	case http.MethodPost:
 		app.createCourse(w, r)
+	case http.MethodPut:
+		app.updateCourse(w, r)
+	case http.MethodDelete:
+		app.deleteCourse(w, r)
 	default:
 		http.Error(w, "Method not allowed", 405)
 	}
