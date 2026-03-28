@@ -15,7 +15,8 @@ func (app *application) routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/students", app.studentsHandler)
 	mux.HandleFunc("/courses", app.coursesHandler)
-	mux.HandleFunc("/enroll", app.enrollStudent)	
+	mux.HandleFunc("/enrollments", app.enrollmentsHandler)
+		
 	
 }
 
