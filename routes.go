@@ -19,6 +19,9 @@ func (app *application) routes(mux *http.ServeMux) {
 
 	// courses
 	mux.HandleFunc("/courses", app.coursesHandler)
+
+	// enrollments
+	mux.HandleFunc("/enroll", app.enrollStudent)
 }
 
 // students router
@@ -47,7 +50,7 @@ func (app *application) coursesHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", 405)
 	}
-}
+
 
 // home
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
